@@ -1,0 +1,8 @@
+code,heen,terug,cond,naam,toelichting,waarde_type,min_waarde,max_waarde
+NAA,,A,,Referentie stagnatie,"Unieke identificatie van de stagnatie, te vermelden bij de codes GXO, JXO. Als de stagnatie op meerdere objecten betrekking heeft, dan deze identificatie bij alle objecten (in GXO, JXO) opnemen. Bijvoorbeeld bij het plaatsen van een afsluiter of een storing van het materieel de stagnatie bij alle direct betrokken objecten (de objecten waarbij vertraging optreedt) vermelden",,,
+NXC,A,,,Reden stagnatie,Codelijst conform par. 6.13,codelijst,,
+NBF,,A,,Startdatum stagnatie,De lokale startdatum stagnatie. Formaat [datum],datum,,
+NBG,,A,,Starttijd stagnatie,De lokale starttijd stagnatie. Formaat [tijdstip],tijd,,
+NXD,,A,,Einddatum stagnatie,De lokale einddatum stagnatie. Formaat [datum],datum,,
+NXE,,A,,Eindtijd stagnatie,De lokale eindtijd stagnatie. Formaat [tijdstip],tijd,,
+NDE,,O,A,Algemene opmerking,"Als een opmerking door een van de andere velden vereist wordt, dan deze opmerking als attribuut ""NDE"" opnemen",,,

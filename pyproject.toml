@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rgs-ribx"
+version = "0.1.0"
+description = "Read RIBX sewer inspection data and compute lost storage capacity."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Bastiaan Roos" }]
+dependencies = [
+    # Floors match what QGIS 3.x LTR bundles (lxml 4.5.2, pandas 1.3.3) so the
+    # library installs/imports cleanly inside QGIS without upgrading its stack.
+    "lxml>=4.5",
+    "pandas>=1.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+rgs_ribx = ["parsing/object_headers/*.csv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

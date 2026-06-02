@@ -1,0 +1,8 @@
+code,heen,terug,cond,naam,toelichting,waarde_type,min_waarde,max_waarde
+LAA,,A,,Stortbonreferentie,"Unieke identificatie van de stortbon, te vermelden bij de codes GXW en JXW",,,
+LBF,,A,,Stortdatum,Formaat [datum],datum,,
+LXH,,A,,Begeleidingsbonreferentie,Nummer van de begeleidingsbon van de opdrachtgever die gebruikt moet worden bij het storten,,,
+LXI,,A,,Nummer stortbon,Nummer van de stortbon zoals afgegeven bij de stortplaats,,,
+LXJ,,A,,Tonnage stortbon,Tonnage zoals vermeld op de stortbon van veld LXI,float,0,100000
+LBG,,A,,Storttijd,De lokale tijd van het storten. Formaat [tijdstip],tijd,,
+LDE,,O,A,Algemene opmerking,"Als een opmerking door een van de andere velden vereist wordt, dan deze opmerking als attribuut ""LDE"" opnemen",,,
