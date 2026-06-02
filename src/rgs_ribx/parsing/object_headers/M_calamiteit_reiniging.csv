@@ -1,0 +1,9 @@
+code,heen,terug,cond,naam,toelichting,waarde_type,min_waarde,max_waarde
+MAA,A,A,,Referentie calamiteit,"Unieke identificatie van de calamiteit, te vermelden bij de codes GXN, JXN. Bij voorkeur hiervoor de identificatie vanuit het meldingssysteem hanteren",,,
+MXA,A,,,Datum melding calamiteit,De lokale datum waarop de calamiteit bij het reinigingsbedrijf gemeld is. Formaat [datum],datum,,
+MXB,A,,,Tijdstip melding calamiteit,Het lokale tijdstip waarop de calamiteit bij het reinigingsbedrijf gemeld is. Formaat [tijdstip],tijd,,
+MBF,,A,,Aankomstdatum calamiteit,De lokale aankomstdatum calamiteit. Formaat [datum],datum,,
+MBG,,A,,Aankomsttijd calamiteit,De lokale aankomsttijd calamiteit. Formaat [tijdstip],tijd,,
+MXD,,A,,Vertrekdatum calamiteit,De lokale vertrekdatum calamiteit. Formaat [datum],datum,,
+MXE,,A,,Vertrektijd calamiteit,De lokale vertrektijd calamiteit. Formaat [tijdstip],tijd,,
+MDE,,,,Algemene opmerking,"Als een opmerking door een van de andere velden vereist wordt, dan deze opmerking als attribuut ""MDE"" opnemen",,,

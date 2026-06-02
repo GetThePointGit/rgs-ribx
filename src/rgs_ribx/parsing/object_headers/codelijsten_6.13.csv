@@ -1,0 +1,187 @@
+veld,naam,code,beschrijving
+AXB|CXB|GXB,De verharding van het wegdek,A,Klinkers
+AXB|CXB|GXB,De verharding van het wegdek,B,Asfalt
+AXB|CXB|GXB,De verharding van het wegdek,C,Beton
+AXB|CXB|GXB,De verharding van het wegdek,D,Tegels
+AXB|CXB|GXB,De verharding van het wegdek,E,Stelconplaten
+AXB|CXB|GXB,De verharding van het wegdek,F,Onverhard
+AXB|CXB|GXB,De verharding van het wegdek,G,Steenslag
+AXB|CXB|GXB,De verharding van het wegdek,H,Kasseien
+AXB|CXB|GXB,De verharding van het wegdek,I,Mager beton
+AXB|CXB|GXB,De verharding van het wegdek,Z,Anders
+AXC|CXC|EXC|GXC|JXC,Leiding of put ontbreekt in opdracht,A,Ja
+AXC|CXC|EXC|GXC|JXC,Leiding of put ontbreekt in opdracht,B,Nee
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,A,Voertuig/obstakel op toegang
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,B,Straat niet toegankelijk voor voertuig
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,C,Groen blokkeert de toegang
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,D,Niet aangetroffen
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,E,Deksel vast
+AXD|CXD|EXD|GXD|JXD,Leiding of put niet behandeld,Z,Anders
+AXF|CXF|GXF,Verbindingstype,A,Vaar/moer
+AXF|CXF|GXF,Verbindingstype,B,Mof/spie
+AXF|CXF|GXF,Verbindingstype,Z,Anders
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,A,Dichtingsmassa
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,B,Cementmortel
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,C,Voegenkit
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,D,Compriband
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,E,Rubberring
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,F,Kunststofring
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,G,"Voegenkit, (mogelijk) asbesthoudend"
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,H,Geen
+AXP|CXP|EXP|GXP|JXP,Voegmateriaal,Z,Anders
+EAR,Kolktype,A,Straatkolk
+EAR,Kolktype,B,Trottoirkolk
+EAR,Kolktype,C,Combikolk
+EAR,Kolktype,D,Infiltratiekolk
+EAR,Kolktype,Z,Anders
+ECM,Reinigingstype,A,Mechanisch - groot materieel
+ECM,Reinigingstype,B,Mechanisch - klein materieel
+ECM,Reinigingstype,C,Handmatig
+ECM,Reinigingstype,Z,Anders
+EXJ,Nummerzijde locatie,A,Even
+EXJ,Nummerzijde locatie,B,Oneven
+EXJ,Nummerzijde locatie,C,Onbekend
+GBE|JBE,Reinigingsmethode,A,Hogedrukreiniging
+GBE|JBE,Reinigingsmethode,B,Spoelen met water
+GBE|JBE,Reinigingsmethode,C,Schuimprop
+GBE|JBE,Reinigingsmethode,D,IJsslurry
+GBE|JBE,Reinigingsmethode,E,Schrapen
+GBE|JBE,Reinigingsmethode,F,Doortrekken dik touw
+GBE|JBE,Reinigingsmethode,G,Handmatig
+GBE|JBE,Reinigingsmethode,Z,Anders
+GBP|JBP,Reinigingsdoel,A,Reguliere reiniging
+GBP|JBP,Reinigingsdoel,B,Verstopte leiding
+GBP|JBP,Reinigingsdoel,C,Bijkomende zorg: strengen naast verstopte streng
+GBP|JBP,Reinigingsdoel,D,T.b.v. inspectie
+GBP|JBP,Reinigingsdoel,E,Nazorg daags na reiniging
+GBP|JBP,Reinigingsdoel,F,Voorreiniging
+GBP|JBP,Reinigingsdoel,Z,Anders
+GBT|JBT,Reinigingsfase,A,Van de opdrachtgever naar de reiniger
+GBT|JBT,Reinigingsfase,B,Van de reiniger naar de opdrachtgever ter controle
+GBT|JBT,Reinigingsfase,C,Intern bij de opdrachtgever
+GBT|JBT,Reinigingsfase,Z,Anders
+GXK|JXK,Opdrachtgever aanwezig,A,Ja
+GXK|JXK,Opdrachtgever aanwezig,B,Nee
+GXT|JXT,Controle reiniging door reiniger,A,Gecontroleerd en goedgekeurd
+GXT|JXT,Controle reiniging door reiniger,B,Gecontroleerd en afgekeurd
+GXU|JXU|GXV|JXV,Beginput / Eindput bereikbaar,A,Ja
+GXU|JXU|GXV|JXV,Beginput / Eindput bereikbaar,B,Nee
+NXC,Reden stagnatie,A,Bijzuigen t.b.v. inspectie
+NXC,Reden stagnatie,B,Op afstand werken
+NXC,Reden stagnatie,C,Puin uit put halen
+NXC,Reden stagnatie,D,Afsluiters plaatsen
+NXC,Reden stagnatie,E,Uitzoekwerk i.v.m. afwijkende tekening
+NXC,Reden stagnatie,F,Stelsel droogzetten
+NXC,Reden stagnatie,G,Putten zoeken
+NXC,Reden stagnatie,H,Zakputten
+NXC,Reden stagnatie,I,"Hoge vervuilingsgraad (doeken, vet, etc.)"
+NXC,Reden stagnatie,J,Ontbrekend materieel van de aannemer
+NXC,Reden stagnatie,K,Storing materieel
+NXC,Reden stagnatie,Z,Anders
+QBE|SBE,Methode van reiniging,A,Hogedrukreiniging
+QBE|SBE,Methode van reiniging,B,Spoelen met water
+QBE|SBE,Methode van reiniging,C,Schuimprop
+QBE|SBE,Methode van reiniging,D,IJsslurry
+QBE|SBE,Methode van reiniging,E,Schrapen
+QBE|SBE,Methode van reiniging,F,Doortrekken dik touw
+QBE|SBE,Methode van reiniging,G,Handmatig
+QBE|SBE,Methode van reiniging,H,Afzuigen
+QBE|SBE,Methode van reiniging,Z,Anders
+QBP|SBP,Doel van de reiniging,A,Reguliere reiniging
+QBP|SBP,Doel van de reiniging,B,Verstopte drainageleiding
+QBP|SBP,Doel van de reiniging,C,Bijkomende zorg
+QBP|SBP,Doel van de reiniging,D,T.b.v. inspectie
+QBP|SBP,Doel van de reiniging,E,Nazorg na reiniging
+QBP|SBP,Doel van de reiniging,F,Voorreiniging
+QBP|SBP,Doel van de reiniging,Z,Anders
+QBT|SBT,Reinigingsfase,A,Van opdrachtgever naar reiniger
+QBT|SBT,Reinigingsfase,B,Van reiniger naar opdrachtgever ter controle
+QBT|SBT,Reinigingsfase,C,Intern bij de opdrachtgever
+QBT|SBT,Reinigingsfase,Z,Anders
+QCJ,Soort drainagesysteem,A,Cunetdrainage
+QCJ,Soort drainagesysteem,B,Rioolsdrainage
+QCJ,Soort drainagesysteem,C,Velddrainage
+QCJ,Soort drainagesysteem,D,Blokdrainage
+QCJ,Soort drainagesysteem,E,Verzameldrainage
+QCJ,Soort drainagesysteem,F,Privédrainage
+QCJ,Soort drainagesysteem,Z,Anders
+QCE,Materiaal omhulling leiding,A,Kokosvezels
+QCE,Materiaal omhulling leiding,B,Polypropeenvezels
+QCE,Materiaal omhulling leiding,C,Polystyreenkorrels
+QCE,Materiaal omhulling leiding,D,Drainagekous
+QCE,Materiaal omhulling leiding,E,Kunstgras
+QCE,Materiaal omhulling leiding,F,Vlies
+QCE,Materiaal omhulling leiding,Z,Anders
+QXC|SXC,Object ontbreekt in opdracht,A,Ja
+QXC|SXC,Object ontbreekt in opdracht,B,Nee
+QXD|SXD,Object niet behandeld,A,Voertuig/obstakel op toegang
+QXD|SXD,Object niet behandeld,B,Straat niet toegankelijk voor voertuig
+QXD|SXD,Object niet behandeld,C,Groen blokkeert de toegang
+QXD|SXD,Object niet behandeld,D,Niet aangetroffen
+QXD|SXD,Object niet behandeld,E,Deksel vast
+QXD|SXD,Object niet behandeld,Z,Anders
+QXF,Verbindingstype,A,Vaar/moer
+QXF,Verbindingstype,B,Mof/spie
+QXF,Verbindingstype,Z,Anders
+QXK|SXK,Opdrachtgever aanwezig,A,Ja
+QXK|SXK,Opdrachtgever aanwezig,B,Nee
+QXT|SXT,Controle reiniging door reiniger,A,Gecontroleerd en goedgekeurd
+QXT|SXT,Controle reiniging door reiniger,B,Gecontroleerd en afgekeurd
+QXU|QXV|SXU,Knooppunt bereikbaar,A,Ja
+QXU|QXV|SXU,Knooppunt bereikbaar,B,Nee
+SAR,Drainage knooppunttype,A,Rioolput
+SAR,Drainage knooppunttype,B,Inspectieput
+SAR,Drainage knooppunttype,C,Ontstoppingsopening
+SAR,Drainage knooppunttype,D,Kijkgat
+SAR,Drainage knooppunttype,E,Uitlaat
+SAR,Drainage knooppunttype,F,Stankafsluiter bij inspectieput
+SAR,Drainage knooppunttype,G,Stankafsluiter bij kijkgat
+SAR,Drainage knooppunttype,H,Stankafsluiter zonder toegangspunt
+SAR,Drainage knooppunttype,I,Uitstroombak
+SAR,Drainage knooppunttype,J,Doorspuitput
+SAR,Drainage knooppunttype,K,Instelput
+SAR,Drainage knooppunttype,L,Eindkap
+SAR,Drainage knooppunttype,Z,Anders
+SBC,Verticaal referentiepunt,A,NAP
+SBC,Verticaal referentiepunt,Z,Anders
+SBD,Omtrekreferentiepunt,A,Laagst gelegen buis is 12 uur
+SBD,Omtrekreferentiepunt,B,Laagst gelegen buis is 6 uur
+SBD,Omtrekreferentiepunt,C,Eerste leiding na noorden is 12 uur
+SBD,Omtrekreferentiepunt,Z,Anders
+RBG|TBG,Vervuilingsgraad,A,0% < vermindering dwarsdoorsnede <= 10%
+RBG|TBG,Vervuilingsgraad,B,10% < vermindering dwarsdoorsnede <= 25%
+RBG|TBG,Vervuilingsgraad,C,25% < vermindering dwarsdoorsnede <= 50%
+RBG|TBG,Vervuilingsgraad,D,vermindering > 50%
+RBH|TBH|RDH,Type vervuiling,A,IJzerafzetting
+RBH|TBH|RDH,Type vervuiling,B,Kalkafzetting
+RBH|TBH|RDH,Type vervuiling,C,Wortels
+RBH|TBH|RDH,Type vervuiling,D,Organisch materiaal
+RBH|TBH|RDH,Type vervuiling,Z,Anders
+RDC,Reden beëindiging,A,belemmering
+RDC,Reden beëindiging,B,hoogwaterpeil
+RDC,Reden beëindiging,C,storing aan apparatuur
+RDC,Reden beëindiging,Z,anders
+RDD|TDD,Waterhoogte in drainageput,A,h<=10% van de buishoogte
+RDD|TDD,Waterhoogte in drainageput,D,h > 50% van de buishoogte
+RDI,Functionaliteit drainage na reiniging,A,drainage loopt
+RDI,Functionaliteit drainage na reiniging,B,drainage loopt niet
+TAF,Oppervlakteschade,A,toegenomen wandruwheid
+TAF,Oppervlakteschade,B,afbrokkelen
+TAF,Oppervlakteschade,C,zichtbare toeslagstoffen
+TAF,Oppervlakteschade,D,toeslagstoffen die buiten oppervlak uitsteken
+TAF,Oppervlakteschade,E,ontbrekende toeslagstoffen
+TAF,Oppervlakteschade,F,zichtbare wapening
+TAF,Oppervlakteschade,G,wapening die buiten oppervlak uitsteekt
+TAF,Oppervlakteschade,H,aangetaste wapening
+TAF,Oppervlakteschade,I,ontbrekende wand
+TAF,Oppervlakteschade,J,aantasting van producten op het oppervlak
+TAF,Oppervlakteschade,Z,Anders
+TAR,Defectief deksel of putrand,A,gebroken deksel
+TAR,Defectief deksel of putrand,B,rammelend deksel
+TAR,Defectief deksel of putrand,C,ontbrekend deksel
+TAR,Defectief deksel of putrand,D,gebroken putrand
+TAR,Defectief deksel of putrand,E,losliggende putrand
+TAR,Defectief deksel of putrand,F,ontbrekende putrand
+TAR,Defectief deksel of putrand,G,deksel onder maaiveldniveau
+TAR,Defectief deksel of putrand,H,deksel boven maaiveldniveau
+TAR,Defectief deksel of putrand,Z,Anders
