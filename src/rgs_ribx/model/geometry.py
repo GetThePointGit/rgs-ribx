@@ -6,6 +6,8 @@ We emit 2D WKT and drop any Z value on points (the longitudinal profile uses
 BOB fields, not geometry Z).
 """
 
+from __future__ import annotations
+
 
 def _fmt(value: float) -> str:
     """Format a coordinate without trailing zeros (100000.000 -> '100000')."""

@@ -1,5 +1,7 @@
 """Load the per-object-type RIBX field definitions from bundled CSVs."""
 
+from __future__ import annotations
+
 import csv
 from functools import lru_cache
 from importlib import resources
