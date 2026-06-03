@@ -12,7 +12,11 @@ from typing import Optional
 
 from rgs_ribx.model import field_maps as fm
 from rgs_ribx.model.entities import Inspection, Manhole, Observation, Pipe
-from rgs_ribx.model.geometry import gml_pos_to_wkt_point, gml_poslist_to_wkt_linestring
+from rgs_ribx.model.geometry import (
+    gml_pos_to_wkt_point,
+    gml_poslist_to_wkt_linestring,
+    wkt_linestring_length,
+)
 from rgs_ribx.parsing import ribx_to_pandas
 
 
@@ -76,16 +80,18 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             code = _get(row, fm.REF_FIELDS["A"])
             if code is None:
                 continue
+            geom_wkt = gml_poslist_to_wkt_linestring(_get(row, fm.PIPE_GEOM_FIELDS["A"]))
             pipe = Pipe(
                 code=str(code),
                 manhole1=str(_get(row, fm.NODE1_FIELDS["A"]) or ""),
                 manhole2=str(_get(row, fm.NODE2_FIELDS["A"]) or ""),
-                geometry_wkt=gml_poslist_to_wkt_linestring(_get(row, fm.PIPE_GEOM_FIELDS["A"])),
+                geometry_wkt=geom_wkt,
                 shape=str(_get(row, fm.PIPE_SHAPE_FIELD) or "A"),
                 diameter=_to_float(_get(row, fm.PIPE_DIAMETER_FIELD)),
                 width=_to_float(_get(row, fm.PIPE_WIDTH_FIELD)),
                 bob1=_to_float(_get(row, fm.PIPE_BOB1_FIELD)),
                 bob2=_to_float(_get(row, fm.PIPE_BOB2_FIELD)),
+                length=wkt_linestring_length(geom_wkt),
                 material=_opt_str(_get(row, fm.PIPE_MATERIAL_FIELD)),
                 sewerage_type=_opt_str(_get(row, fm.PIPE_SEWERAGE_TYPE_FIELD)),
                 inspection_date=_to_date(_get(row, fm.DATE_FIELDS["A"])),

@@ -8,6 +8,8 @@ BOB fields, not geometry Z).
 
 from __future__ import annotations
 
+import math
+
 
 def _fmt(value: float) -> str:
     """Format a coordinate without trailing zeros (100000.000 -> '100000')."""
@@ -43,3 +45,29 @@ def gml_poslist_to_wkt_linestring(poslist: str | None) -> str | None:
     for i in range(0, len(coords), 2):
         vertices.append(f"{_fmt(coords[i])} {_fmt(coords[i + 1])}")
     return "LINESTRING (" + ", ".join(vertices) + ")"
+
+
+def wkt_linestring_length(wkt: str | None) -> "float | None":
+    """Planar 2D length (metres, EPSG:28992) of a WKT LINESTRING.
+
+    Returns None if ``wkt`` is empty or not a parseable LINESTRING. Used to
+    populate ``Pipe.length`` so trajectory routing and the side-view profile
+    have a real distance to work with.
+    """
+    if not wkt or "LINESTRING" not in wkt.upper():
+        return None
+    try:
+        inside = wkt[wkt.index("(") + 1: wkt.rindex(")")]
+    except ValueError:
+        return None
+    points = []
+    for part in inside.split(","):
+        coords = part.split()
+        if len(coords) >= 2:
+            points.append((float(coords[0]), float(coords[1])))
+    if len(points) < 2:
+        return None
+    total = 0.0
+    for (x1, y1), (x2, y2) in zip(points, points[1:]):
+        total += math.hypot(x2 - x1, y2 - y1)
+    return total
