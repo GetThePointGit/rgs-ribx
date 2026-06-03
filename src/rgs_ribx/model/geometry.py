@@ -47,6 +47,28 @@ def gml_poslist_to_wkt_linestring(poslist: str | None) -> str | None:
     return "LINESTRING (" + ", ".join(vertices) + ")"
 
 
+def _parse_pos(pos: str | None):
+    if not pos:
+        return None
+    parts = [float(p) for p in pos.split()]
+    if len(parts) < 2:
+        return None
+    return parts[0], parts[1]
+
+
+def pos_pair_to_wkt_linestring(pos1: str | None, pos2: str | None) -> "str | None":
+    """Build a 2-point WKT LINESTRING from two GML ``pos`` strings (X Y).
+
+    Used for inspection RIBX where the pipe has no ``AXY`` geometry but does
+    carry node coordinates (``AAE`` / ``AAG``).
+    """
+    a = _parse_pos(pos1)
+    b = _parse_pos(pos2)
+    if not a or not b:
+        return None
+    return f"LINESTRING ({_fmt(a[0])} {_fmt(a[1])}, {_fmt(b[0])} {_fmt(b[1])})"
+
+
 def wkt_linestring_length(wkt: str | None) -> "float | None":
     """Planar 2D length (metres, EPSG:28992) of a WKT LINESTRING.
 
