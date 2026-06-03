@@ -21,12 +21,22 @@ MANHOLE_GEOM_FIELDS = {"C": "CAB", "J": "JAB", "S": "SAB", "E": "EAB"}
 
 # Pipe attributes (inspection pipe ZB_A).
 PIPE_SHAPE_FIELD = "ACA"
-PIPE_DIAMETER_FIELD = "ACB"
-PIPE_WIDTH_FIELD = "ACC"
+PIPE_DIAMETER_FIELD = "ACB"   # "Hoogte" in mm
+PIPE_WIDTH_FIELD = "ACC"      # "Breedte" in mm
 PIPE_MATERIAL_FIELD = "ACD"
 PIPE_SEWERAGE_TYPE_FIELD = "ACJ"
 PIPE_BOB1_FIELD = "ACR"
 PIPE_BOB2_FIELD = "ACS"
+# Inspection RIBX uses AXG/AXH ("NAP-waarde bob bij begin-/eindput", m NAP).
+PIPE_BOB1_ALT_FIELD = "AXG"
+PIPE_BOB2_ALT_FIELD = "AXH"
+# Inspection start node reference (for measurement direction / reverse).
+PIPE_START_NODE_FIELD = "AAB"
+
+# RIBX diameter/width (ACB/ACC) are millimetres; the model divides by 1000 for metres.
+
+# Observation code carrying inclination (helling) measurements.
+INCLINATION_CODE = "BXA"
 
 # Manhole attributes (inspection manhole ZB_C).
 MANHOLE_NODE_TYPE_FIELD = "CAR"

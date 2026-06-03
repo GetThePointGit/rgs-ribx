@@ -6,7 +6,7 @@ def test_parses_pipe_and_manhole(fixtures_dir):
 
     assert set(objects.keys()) == {"A", "C"}
     assert objects["A"].iloc[0]["AAA"] == "L001"
-    assert objects["A"].iloc[0]["ACB"] == "0.300"
+    assert objects["A"].iloc[0]["ACB"] == "300"
     assert objects["C"].iloc[0]["CAA"] == "P001"
     assert (errors["level"] == "error").sum() == 0
 

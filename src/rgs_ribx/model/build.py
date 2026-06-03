@@ -15,8 +15,10 @@ from rgs_ribx.model.entities import Inspection, Manhole, Observation, Pipe
 from rgs_ribx.model.geometry import (
     gml_pos_to_wkt_point,
     gml_poslist_to_wkt_linestring,
+    pos_pair_to_wkt_linestring,
     wkt_linestring_length,
 )
+from rgs_ribx.model.inclination import build_inclination_profile
 from rgs_ribx.parsing import ribx_to_pandas
 
 
@@ -28,6 +30,15 @@ class BuildResult:
     pipes: list
     inspections: list
     errors: object  # pandas DataFrame from the parser
+    measurements: dict = None  # {pipe_code: [MeasurementPoint]} from inclination
+
+
+def _first(*values):
+    """Return the first value that is not None."""
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def _to_float(value) -> Optional[float]:
@@ -72,6 +83,7 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
     inspections: list = []
 
     seen_manholes: dict = {}
+    measurements: dict = {}
 
     # --- Pipes (ZB_A) ---
     if "A" in objects:
@@ -80,17 +92,27 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             code = _get(row, fm.REF_FIELDS["A"])
             if code is None:
                 continue
+            node1_pos = _get(row, fm.NODE1_GEOM_FIELDS["A"])
+            node2_pos = _get(row, fm.NODE2_GEOM_FIELDS["A"])
+            # Geometry: explicit AXY line, else the node1 -> node2 segment.
             geom_wkt = gml_poslist_to_wkt_linestring(_get(row, fm.PIPE_GEOM_FIELDS["A"]))
+            if geom_wkt is None:
+                geom_wkt = pos_pair_to_wkt_linestring(node1_pos, node2_pos)
+
+            diameter_mm = _to_float(_get(row, fm.PIPE_DIAMETER_FIELD))
+            width_mm = _to_float(_get(row, fm.PIPE_WIDTH_FIELD))
             pipe = Pipe(
                 code=str(code),
                 manhole1=str(_get(row, fm.NODE1_FIELDS["A"]) or ""),
                 manhole2=str(_get(row, fm.NODE2_FIELDS["A"]) or ""),
                 geometry_wkt=geom_wkt,
                 shape=str(_get(row, fm.PIPE_SHAPE_FIELD) or "A"),
-                diameter=_to_float(_get(row, fm.PIPE_DIAMETER_FIELD)),
-                width=_to_float(_get(row, fm.PIPE_WIDTH_FIELD)),
-                bob1=_to_float(_get(row, fm.PIPE_BOB1_FIELD)),
-                bob2=_to_float(_get(row, fm.PIPE_BOB2_FIELD)),
+                diameter=(diameter_mm / 1000.0) if diameter_mm is not None else None,
+                width=(width_mm / 1000.0) if width_mm is not None else None,
+                bob1=_first(_to_float(_get(row, fm.PIPE_BOB1_FIELD)),
+                            _to_float(_get(row, fm.PIPE_BOB1_ALT_FIELD))),
+                bob2=_first(_to_float(_get(row, fm.PIPE_BOB2_FIELD)),
+                            _to_float(_get(row, fm.PIPE_BOB2_ALT_FIELD))),
                 length=wkt_linestring_length(geom_wkt),
                 material=_opt_str(_get(row, fm.PIPE_MATERIAL_FIELD)),
                 sewerage_type=_opt_str(_get(row, fm.PIPE_SEWERAGE_TYPE_FIELD)),
@@ -99,10 +121,15 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             )
             pipes.append(pipe)
 
-            _register_endpoint(seen_manholes, pipe.manhole1,
-                               gml_pos_to_wkt_point(_get(row, fm.NODE1_GEOM_FIELDS["A"])))
-            _register_endpoint(seen_manholes, pipe.manhole2,
-                               gml_pos_to_wkt_point(_get(row, fm.NODE2_GEOM_FIELDS["A"])))
+            _register_endpoint(seen_manholes, pipe.manhole1, gml_pos_to_wkt_point(node1_pos))
+            _register_endpoint(seen_manholes, pipe.manhole2, gml_pos_to_wkt_point(node2_pos))
+
+            # Inspection ran from AAB; reverse if that is the second node.
+            start_node = _opt_str(_get(row, fm.PIPE_START_NODE_FIELD))
+            reverse = bool(start_node) and start_node == pipe.manhole2
+            profile = _build_inclination(observations.get("A"), idx, pipe, reverse)
+            if profile:
+                measurements[pipe.code] = profile
 
             insp = Inspection(
                 object_code=pipe.code,
@@ -128,7 +155,39 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             )
 
     manholes = list(seen_manholes.values())
-    return manholes, pipes, inspections
+    return manholes, pipes, inspections, measurements
+
+
+def _build_inclination(obs_df, object_idx, pipe, reverse):
+    """Build the inclination (BXA) bob profile for one pipe, or [] if none."""
+    if obs_df is None or len(obs_df) == 0 or pipe.bob1 is None or pipe.bob2 is None:
+        return []
+    subset = obs_df[
+        (obs_df["_object_idx"] == object_idx) & (obs_df["A"] == fm.INCLINATION_CODE)
+    ]
+    if len(subset) == 0:
+        return []
+    measurement_type = None
+    mrios = []
+    for _i, row in subset.iterrows():
+        dist = _to_float(_get(row, "I"))
+        value = _to_float(_get(row, "D"))
+        if dist is None or value is None:
+            continue
+        if measurement_type is None:
+            measurement_type = _opt_str(_get(row, "B"))
+        mrios.append({"distance": dist, "measurement": value})
+    if not mrios:
+        return []
+    return build_inclination_profile(
+        mrios,
+        horizontal_distance=pipe.length or 0.0,
+        bob1=pipe.bob1,
+        bob2=pipe.bob2,
+        measurement_type=measurement_type,
+        diameter=pipe.diameter or 0.0,
+        reverse=reverse,
+    )
 
 
 def _register_endpoint(seen: dict, code: str, wkt) -> None:
@@ -172,5 +231,11 @@ def _to_int(value) -> Optional[int]:
 def build_from_ribx(ribx_path: "Path | str") -> BuildResult:
     """Parse a RIBX file and build the domain model."""
     objects, observations, errors = ribx_to_pandas(ribx_path)
-    manholes, pipes, inspections = build_from_objects(objects, observations)
-    return BuildResult(manholes=manholes, pipes=pipes, inspections=inspections, errors=errors)
+    manholes, pipes, inspections, measurements = build_from_objects(objects, observations)
+    return BuildResult(
+        manholes=manholes,
+        pipes=pipes,
+        inspections=inspections,
+        errors=errors,
+        measurements=measurements,
+    )
