@@ -16,6 +16,7 @@ def test_build_pipe_from_fixture(fixtures_dir):
     assert pipe.bob2 == -2.600
     assert pipe.material == "PVC"
     assert pipe.geometry_wkt == "LINESTRING (100000 400000, 100030 400000)"
+    assert pipe.length == 30.0
     assert pipe.inspection_date == date(2024, 6, 15)
 
 

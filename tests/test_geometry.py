@@ -1,6 +1,24 @@
 import pytest
 
-from rgs_ribx.model.geometry import gml_pos_to_wkt_point, gml_poslist_to_wkt_linestring
+from rgs_ribx.model.geometry import (
+    gml_pos_to_wkt_point,
+    gml_poslist_to_wkt_linestring,
+    wkt_linestring_length,
+)
+
+
+def test_linestring_length_straight():
+    assert wkt_linestring_length("LINESTRING (100000 400000, 100030 400000)") == 30.0
+
+
+def test_linestring_length_multi_segment():
+    # legs 30 then 40 -> 70
+    assert wkt_linestring_length("LINESTRING (0 0, 30 0, 30 40)") == 70.0
+
+
+def test_linestring_length_invalid_returns_none():
+    assert wkt_linestring_length(None) is None
+    assert wkt_linestring_length("POINT (1 2)") is None
 
 
 def test_point_two_coords():
