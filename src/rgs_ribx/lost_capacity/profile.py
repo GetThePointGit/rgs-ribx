@@ -79,3 +79,31 @@ def disc_segment(radius: float, height: float) -> float:
     angle = 2 * math.acos((radius - height) / radius)
     area = ((radius ** 2) / 2) * (angle - math.sin(angle))
     return area
+
+
+def correct_profile_to_bobs(points, bob1, bob2, length) -> None:
+    """De-trend a measured profile so its ends align with the pipe's known BOBs.
+
+    Ported from lizard-progress ``correct_bob_values``: inclination (helling)
+    measurements drift — they tend to end too deep, giving a sawtooth in the
+    side-view. This rotates the line through the first/last measurement onto the
+    ideal ``bob1`` → ``bob2`` line, preserving the relative sag shape. Modifies
+    each point's ``bob`` and ``obb`` in place (the diameter is unchanged).
+
+    No-op when there are fewer than 3 points, the length is missing/zero, or the
+    measurements span no distance.
+    """
+    pts = sorted(points, key=lambda p: p.dist)
+    if len(pts) < 3 or not length:
+        return
+    first, last = pts[0], pts[-1]
+    span = last.dist - first.dist
+    if span == 0:
+        return
+
+    for point in pts:
+        ideal = bob1 + (bob2 - bob1) * (point.dist / length)
+        apparent = first.bob + (last.bob - first.bob) * ((point.dist - first.dist) / span)
+        correction = ideal - apparent
+        point.bob += correction
+        point.obb += correction
