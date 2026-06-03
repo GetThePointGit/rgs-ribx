@@ -179,11 +179,15 @@ def _build_inclination(obs_df, object_idx, pipe, reverse):
         mrios.append({"distance": dist, "measurement": value})
     if not mrios:
         return []
+    # The measurements run from the inspection start node. When that is the
+    # pipe's manhole2 (reverse), integrate from bob2 (swap), matching the old
+    # tool — otherwise the sag is built from the wrong end.
+    start_bob, end_bob = (pipe.bob2, pipe.bob1) if reverse else (pipe.bob1, pipe.bob2)
     return build_inclination_profile(
         mrios,
         horizontal_distance=pipe.length or 0.0,
-        bob1=pipe.bob1,
-        bob2=pipe.bob2,
+        bob1=start_bob,
+        bob2=end_bob,
         measurement_type=measurement_type,
         diameter=pipe.diameter or 0.0,
         reverse=reverse,
