@@ -243,3 +243,114 @@ def build_from_ribx(ribx_path: "Path | str") -> BuildResult:
         errors=errors,
         measurements=measurements,
     )
+
+
+def build_from_sufrib(paths) -> BuildResult:
+    """Parse classic SUFRIB files (.rib + .hel/.rmb) and build the domain model.
+
+    ``paths`` is one path or a list (network + measurement files, any order).
+    """
+    from rgs_ribx.parsing.sufrib import parse_coordinate, parse_sufrib
+
+    puts, rioos, mrios = parse_sufrib(paths)
+
+    manholes = []
+    coords = {}
+    for row in puts:
+        code = (row.get("CAA") or "").strip()
+        if not code:
+            continue
+        xy = parse_coordinate(row.get("CAB"))
+        if xy:
+            coords[code] = xy
+        manholes.append(
+            Manhole(
+                code=code,
+                geometry_wkt=(gml_pos_to_wkt_point(f"{xy[0]} {xy[1]}") if xy else None),
+                node_type=None,
+                ground_level=_to_float(row.get("CCU")),
+                is_sink=(row.get("CAR") == "Xs"),
+            )
+        )
+
+    pipes = []
+    seen = {m.code for m in manholes}
+    for row in rioos:
+        code = row.get("AAA")
+        if not code:
+            continue
+        m1, m2 = (row.get("AAD") or ""), (row.get("AAF") or "")
+        p1 = parse_coordinate(row.get("AAE")) or coords.get(m1)
+        p2 = parse_coordinate(row.get("AAG")) or coords.get(m2)
+        geom = None
+        if p1 and p2:
+            geom = gml_poslist_to_wkt_linestring(f"{p1[0]} {p1[1]} {p2[0]} {p2[1]}")
+        diameter_mm = _to_float(row.get("ACB"))
+        width_mm = _to_float(row.get("ACC"))
+        pipes.append(
+            Pipe(
+                code=str(code),
+                manhole1=str(m1),
+                manhole2=str(m2),
+                geometry_wkt=geom,
+                shape=("B" if row.get("ACA") == "2" else "A"),
+                diameter=(diameter_mm / 1000.0) if diameter_mm is not None else None,
+                width=(width_mm / 1000.0) if width_mm is not None else None,
+                bob1=_to_float(row.get("ACR")),
+                bob2=_to_float(row.get("ACS")),
+                length=wkt_linestring_length(geom),
+                inspection_date=_to_date(row.get("ABF")),
+            )
+        )
+        # Register endpoint manholes that had no *PUT record.
+        for c, xy in ((m1, p1), (m2, p2)):
+            if c and c not in seen:
+                seen.add(c)
+                manholes.append(Manhole(code=c, geometry_wkt=(
+                    gml_pos_to_wkt_point(f"{xy[0]} {xy[1]}") if xy else None)))
+
+    pipes_by_code = {p.code: p for p in pipes}
+    measurements = _build_sufrib_measurements(mrios, pipes_by_code)
+    return BuildResult(manholes=manholes, pipes=pipes, inspections=[],
+                       errors=None, measurements=measurements)
+
+
+def _build_sufrib_measurements(mrios, pipes_by_code) -> dict:
+    """Group *MRIO rows by sewer and integrate into per-pipe MeasurementPoints."""
+    by_sewer = {}
+    for row in mrios:
+        sewer = (row.get("ZYE") or "").strip()
+        if sewer:
+            by_sewer.setdefault(sewer, []).append(row)
+
+    result = {}
+    for sewer, rows in by_sewer.items():
+        pipe = pipes_by_code.get(sewer)
+        if pipe is None or pipe.bob1 is None or pipe.bob2 is None:
+            continue
+        zyr = (rows[0].get("ZYR") or "").upper()
+        zys = (rows[0].get("ZYS") or "").upper()
+        mtype = {"AE": "J", "AF": "K", "CB": "AA"}.get(zyr + zys, "AA")
+        reverse = rows[0].get("ZYB") == "2"
+        mrios_clean = []
+        for row in rows:
+            dist = _to_float(row.get("ZYA"))
+            value = _to_float(row.get("ZYT"))
+            if dist is None or value is None:
+                continue
+            exp = _to_int(row.get("ZYU"))
+            if exp is not None:
+                value *= 10 ** exp
+            mrios_clean.append({"distance": dist, "measurement": value})
+        if not mrios_clean:
+            continue
+        # Reversed: integrate from the other end (swap BOBs), matching the old tool.
+        start_bob, end_bob = (pipe.bob2, pipe.bob1) if reverse else (pipe.bob1, pipe.bob2)
+        profile = build_inclination_profile(
+            mrios_clean, horizontal_distance=pipe.length or 0.0,
+            bob1=start_bob, bob2=end_bob, measurement_type=mtype,
+            diameter=pipe.diameter or 0.0, reverse=reverse,
+        )
+        if profile:
+            result[sewer] = profile
+    return result
