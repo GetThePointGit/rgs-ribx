@@ -96,14 +96,18 @@ def correct_profile_to_bobs(points, bob1, bob2, length) -> None:
     pts = sorted(points, key=lambda p: p.dist)
     if len(pts) < 3 or not length:
         return
-    first, last = pts[0], pts[-1]
-    span = last.dist - first.dist
+    # Snapshot the apparent-line endpoints BEFORE the loop. Reading first.bob /
+    # last.bob inside the loop would use values already mutated by this same
+    # loop, collapsing every correction after the first point to ~zero.
+    first_dist, first_bob = pts[0].dist, pts[0].bob
+    last_dist, last_bob = pts[-1].dist, pts[-1].bob
+    span = last_dist - first_dist
     if span == 0:
         return
 
     for point in pts:
         ideal = bob1 + (bob2 - bob1) * (point.dist / length)
-        apparent = first.bob + (last.bob - first.bob) * ((point.dist - first.dist) / span)
+        apparent = first_bob + (last_bob - first_bob) * ((point.dist - first_dist) / span)
         correction = ideal - apparent
         point.bob += correction
         point.obb += correction

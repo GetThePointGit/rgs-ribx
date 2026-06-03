@@ -35,6 +35,20 @@ def test_correct_profile_preserves_sag():
     assert pts[1].bob == pytest.approx(-2.25)
 
 
+def test_correct_profile_removes_linear_drift_on_all_points():
+    # A purely linear drift below a flat ideal must be fully de-trended to the
+    # ideal at EVERY point (regresses the bug where only the first point moved).
+    pts = [
+        MeasurementPoint(dist=0.0, bob=-2.5, obb=-2.2),
+        MeasurementPoint(dist=15.0, bob=-2.6, obb=-2.3),
+        MeasurementPoint(dist=30.0, bob=-2.7, obb=-2.4),
+    ]
+    correct_profile_to_bobs(pts, bob1=-2.0, bob2=-2.0, length=30.0)
+    assert pts[0].bob == pytest.approx(-2.0)
+    assert pts[1].bob == pytest.approx(-2.0)   # would be -2.25 with the bug
+    assert pts[2].bob == pytest.approx(-2.0)
+
+
 def test_correct_profile_noop_when_too_few_points():
     pts = [
         MeasurementPoint(dist=0.0, bob=-2.0, obb=-1.7),
