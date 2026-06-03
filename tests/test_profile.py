@@ -2,7 +2,46 @@ import math
 
 import pytest
 
-from rgs_ribx.lost_capacity.profile import MeasurementPoint, disc_segment
+from rgs_ribx.lost_capacity.profile import (
+    MeasurementPoint,
+    correct_profile_to_bobs,
+    disc_segment,
+)
+
+
+def test_correct_profile_aligns_ends_to_bobs():
+    # A straight measured line -2.0 -> -3.0 (too steep) corrected onto the true
+    # BOBs -2.0 -> -2.3; the relative shape (here none) is preserved.
+    pts = [
+        MeasurementPoint(dist=0.0, bob=-2.0, obb=-1.7),
+        MeasurementPoint(dist=15.0, bob=-2.5, obb=-2.2),
+        MeasurementPoint(dist=30.0, bob=-3.0, obb=-2.7),
+    ]
+    correct_profile_to_bobs(pts, bob1=-2.0, bob2=-2.3, length=30.0)
+    assert pts[0].bob == pytest.approx(-2.0)
+    assert pts[-1].bob == pytest.approx(-2.3)
+    assert pts[1].bob == pytest.approx(-2.15)
+    assert pts[1].obb == pytest.approx(pts[1].bob + 0.3)
+
+
+def test_correct_profile_preserves_sag():
+    # A 0.1 m sag at the middle survives the de-trend (only drift is removed).
+    pts = [
+        MeasurementPoint(dist=0.0, bob=-2.0, obb=-1.7),
+        MeasurementPoint(dist=15.0, bob=-2.6, obb=-2.3),
+        MeasurementPoint(dist=30.0, bob=-3.0, obb=-2.7),
+    ]
+    correct_profile_to_bobs(pts, bob1=-2.0, bob2=-2.3, length=30.0)
+    assert pts[1].bob == pytest.approx(-2.25)
+
+
+def test_correct_profile_noop_when_too_few_points():
+    pts = [
+        MeasurementPoint(dist=0.0, bob=-2.0, obb=-1.7),
+        MeasurementPoint(dist=30.0, bob=-3.0, obb=-2.7),
+    ]
+    correct_profile_to_bobs(pts, bob1=-2.0, bob2=-2.3, length=30.0)
+    assert pts[1].bob == -3.0  # unchanged
 
 
 def test_set_water_level_clamps_between_bob_and_obb():
