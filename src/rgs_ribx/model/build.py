@@ -256,10 +256,12 @@ def build_from_sufrib(paths) -> BuildResult:
 
     manholes = []
     coords = {}
+    put_codes = set()
     for row in puts:
         code = (row.get("CAA") or "").strip()
-        if not code:
+        if not code or code in put_codes:  # *PUT may repeat across .rib/.rmb
             continue
+        put_codes.add(code)
         xy = parse_coordinate(row.get("CAB"))
         if xy:
             coords[code] = xy
@@ -275,10 +277,12 @@ def build_from_sufrib(paths) -> BuildResult:
 
     pipes = []
     seen = {m.code for m in manholes}
+    pipe_codes = set()
     for row in rioos:
         code = row.get("AAA")
-        if not code:
+        if not code or code in pipe_codes:  # *RIOO appears in both .rib and .rmb
             continue
+        pipe_codes.add(code)
         m1, m2 = (row.get("AAD") or ""), (row.get("AAF") or "")
         p1 = parse_coordinate(row.get("AAE")) or coords.get(m1)
         p2 = parse_coordinate(row.get("AAG")) or coords.get(m2)
