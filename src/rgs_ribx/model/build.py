@@ -19,6 +19,7 @@ from rgs_ribx.model.geometry import (
     wkt_linestring_length,
 )
 from rgs_ribx.model.inclination import build_inclination_profile
+from rgs_ribx.model.raw import RawMeasurements
 from rgs_ribx.parsing import ribx_to_pandas
 
 
@@ -31,6 +32,7 @@ class BuildResult:
     inspections: list
     errors: object  # pandas DataFrame from the parser
     measurements: dict = None  # {pipe_code: [MeasurementPoint]} from inclination
+    raw_measurements: dict = None  # {pipe_code: RawMeasurements} (un-integrated)
 
 
 def _first(*values):
@@ -84,6 +86,7 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
 
     seen_manholes: dict = {}
     measurements: dict = {}
+    raw_measurements: dict = {}
 
     # --- Pipes (ZB_A) ---
     if "A" in objects:
@@ -130,6 +133,9 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             profile = _build_inclination(observations.get("A"), idx, pipe, reverse)
             if profile:
                 measurements[pipe.code] = profile
+            raw = _raw_inclination(observations.get("A"), idx, pipe.code, reverse)
+            if raw is not None:
+                raw_measurements[pipe.code] = raw
 
             insp = Inspection(
                 object_code=pipe.code,
@@ -155,7 +161,7 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
             )
 
     manholes = list(seen_manholes.values())
-    return manholes, pipes, inspections, measurements
+    return manholes, pipes, inspections, measurements, raw_measurements
 
 
 def _build_inclination(obs_df, object_idx, pipe, reverse):
@@ -192,6 +198,35 @@ def _build_inclination(obs_df, object_idx, pipe, reverse):
         diameter=pipe.diameter or 0.0,
         reverse=reverse,
     )
+
+
+def _raw_inclination(obs_df, object_idx, pipe_code, reverse):
+    """Collect raw BXA points (dist, value) + type for one pipe, or None.
+
+    Mirrors :func:`_build_inclination`'s row selection but keeps the points
+    un-integrated so the enrich step can re-integrate against edited BOBs.
+    """
+    if obs_df is None or len(obs_df) == 0:
+        return None
+    subset = obs_df[
+        (obs_df["_object_idx"] == object_idx) & (obs_df["A"] == fm.INCLINATION_CODE)
+    ]
+    if len(subset) == 0:
+        return None
+    measurement_type = None
+    points = []
+    for _i, row in subset.iterrows():
+        dist = _to_float(_get(row, "I"))
+        value = _to_float(_get(row, "D"))
+        if dist is None or value is None:
+            continue
+        if measurement_type is None:
+            measurement_type = _opt_str(_get(row, "B"))
+        points.append({"dist": dist, "value": value})
+    if not points:
+        return None
+    return RawMeasurements(pipe_code=pipe_code, measurement_type=measurement_type or "",
+                           reverse=reverse, points=points)
 
 
 def _register_endpoint(seen: dict, code: str, wkt) -> None:
@@ -235,13 +270,15 @@ def _to_int(value) -> Optional[int]:
 def build_from_ribx(ribx_path: "Path | str") -> BuildResult:
     """Parse a RIBX file and build the domain model."""
     objects, observations, errors = ribx_to_pandas(ribx_path)
-    manholes, pipes, inspections, measurements = build_from_objects(objects, observations)
+    manholes, pipes, inspections, measurements, raw_measurements = build_from_objects(
+        objects, observations)
     return BuildResult(
         manholes=manholes,
         pipes=pipes,
         inspections=inspections,
         errors=errors,
         measurements=measurements,
+        raw_measurements=raw_measurements,
     )
 
 
