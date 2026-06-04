@@ -7,6 +7,20 @@ DIAMETER_MAX_MM = 3000.0
 LENGTH_TOLERANCE = 0.20  # measured vs geometry length
 
 
+class Issue(str):
+    """A validation message that also carries a severity.
+
+    Subclasses ``str`` so existing callers that join/compare the messages keep
+    working; ``severity`` is ``"error"`` (missing/unknown required data) or
+    ``"warning"`` (a value outside its expected range).
+    """
+
+    def __new__(cls, message, severity="error"):
+        obj = super().__new__(cls, message)
+        obj.severity = severity
+        return obj
+
+
 def validate_network(manholes, pipes, measured_length=None):
     """Return {'pipes': {code: [issues]}, 'manholes': {code: [issues]}}.
 
@@ -34,33 +48,32 @@ def validate_network(manholes, pipes, measured_length=None):
     for p in pipes:
         issues = []
         if not p.code:
-            issues.append("Leidingcode ontbreekt")
+            issues.append(Issue("Leidingcode ontbreekt", "error"))
         if p.bob1 is None or p.bob2 is None:
-            issues.append("BOB ontbreekt (begin of eind)")
+            issues.append(Issue("BOB ontbreekt (begin of eind)", "error"))
         if p.diameter is None:
-            issues.append("Diameter ontbreekt")
+            issues.append(Issue("Diameter ontbreekt", "error"))
         else:
             d_mm = p.diameter * 1000.0
             if d_mm < DIAMETER_MIN_MM or d_mm > DIAMETER_MAX_MM:
-                issues.append(f"Diameter buiten bereik ({d_mm:.0f} mm)")
+                issues.append(Issue(f"Diameter buiten bereik ({d_mm:.0f} mm)", "warning"))
         for ref in (p.manhole1, p.manhole2):
             if not ref or ref not in manhole_codes:
-                issues.append(f"Knooppunt ontbreekt of onbekend ({ref!r})")
+                issues.append(Issue(f"Knooppunt ontbreekt of onbekend ({ref!r})", "error"))
         ml = measured_length.get(p.code)
         if ml is not None and p.length:
             if abs(ml - p.length) > LENGTH_TOLERANCE * p.length:
-                issues.append(
-                    f"Meetlengte wijkt af (gemeten {ml:.1f} m vs {p.length:.1f} m)"
-                )
+                issues.append(Issue(
+                    f"Meetlengte wijkt af (gemeten {ml:.1f} m vs {p.length:.1f} m)", "warning"))
         pipe_issues[p.code] = issues
 
     manhole_issues = {}
     for m in manholes:
         issues = []
         if not m.code:
-            issues.append("Putcode ontbreekt")
+            issues.append(Issue("Putcode ontbreekt", "error"))
         if m.geometry_wkt is None:
-            issues.append("Geometrie ontbreekt")
+            issues.append(Issue("Geometrie ontbreekt", "error"))
         manhole_issues[m.code] = issues
 
     return {"pipes": pipe_issues, "manholes": manhole_issues}
