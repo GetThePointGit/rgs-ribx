@@ -57,3 +57,14 @@ def test_build_from_sufrib_measurements(tmp_path):
     # CB -> AA: bob = ideal(flat -2.0) + value
     assert [round(p.bob, 2) for p in pts] == [-2.0, -2.3, -2.0]
     assert pts[1].obb == pytest.approx(pts[1].bob + 0.3)
+
+
+def test_build_from_sufrib_exposes_raw_measurements(tmp_path):
+    rib, rmb = _write_example(tmp_path)
+    res = rgs_ribx.build_from_sufrib([str(rib), str(rmb)])
+    raw = res.raw_measurements
+    assert "L1" in raw
+    rm = raw["L1"]
+    assert rm.measurement_type == "AA"   # ZYR=C, ZYS=B -> AA
+    assert rm.reverse is False           # ZYB=1
+    assert sorted(p["dist"] for p in rm.points) == [0.0, 15.0, 30.0]

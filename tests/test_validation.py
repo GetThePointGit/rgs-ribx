@@ -1,0 +1,29 @@
+import rgs_ribx
+from rgs_ribx.model.validation import validate_network
+
+
+def test_pipe_completeness_and_ranges():
+    manholes = [rgs_ribx.Manhole(code="A"), rgs_ribx.Manhole(code="B")]
+    pipes = [
+        # ok pipe
+        rgs_ribx.Pipe(code="L1", manhole1="A", manhole2="B", bob1=-2.0, bob2=-2.1,
+                      diameter=0.3, length=30.0),
+        # missing bob2, diameter out of range, manhole2 not present
+        rgs_ribx.Pipe(code="L2", manhole1="A", manhole2="Z", bob1=-2.0, bob2=None,
+                      diameter=5.0, length=30.0),
+    ]
+    result = validate_network(manholes, pipes)
+    assert result["pipes"]["L1"] == []
+    issues = " | ".join(result["pipes"]["L2"]).lower()
+    assert "bob" in issues          # missing bob2
+    assert "diameter" in issues     # 5.0 m -> 5000 mm > 3000
+    assert "knoop" in issues or "manhole" in issues  # dangling manhole2
+
+
+def test_measured_length_mismatch_flagged():
+    manholes = [rgs_ribx.Manhole(code="A"), rgs_ribx.Manhole(code="B")]
+    pipe = rgs_ribx.Pipe(code="L1", manhole1="A", manhole2="B", bob1=-2.0, bob2=-2.1,
+                         diameter=0.3, length=30.0)
+    # measured length 50 m vs geometry 30 m -> >20% mismatch
+    result = validate_network(manholes, [pipe], measured_length={"L1": 50.0})
+    assert any("lengte" in i.lower() for i in result["pipes"]["L1"])
