@@ -352,8 +352,10 @@ def build_from_sufrib(paths) -> BuildResult:
 
     pipes_by_code = {p.code: p for p in pipes}
     measurements = _build_sufrib_measurements(mrios, pipes_by_code)
+    raw_measurements = _raw_sufrib_measurements(mrios, pipes_by_code)
     return BuildResult(manholes=manholes, pipes=pipes, inspections=[],
-                       errors=None, measurements=measurements)
+                       errors=None, measurements=measurements,
+                       raw_measurements=raw_measurements)
 
 
 def _build_sufrib_measurements(mrios, pipes_by_code) -> dict:
@@ -394,4 +396,35 @@ def _build_sufrib_measurements(mrios, pipes_by_code) -> dict:
         )
         if profile:
             result[sewer] = profile
+    return result
+
+
+def _raw_sufrib_measurements(mrios, pipes_by_code) -> dict:
+    """Group *MRIO rows into RawMeasurements per pipe (un-integrated)."""
+    by_sewer = {}
+    for row in mrios:
+        sewer = (row.get("ZYE") or "").strip()
+        if sewer:
+            by_sewer.setdefault(sewer, []).append(row)
+    result = {}
+    for sewer, rows in by_sewer.items():
+        if sewer not in pipes_by_code:
+            continue
+        zyr = (rows[0].get("ZYR") or "").upper()
+        zys = (rows[0].get("ZYS") or "").upper()
+        mtype = {"AE": "J", "AF": "K", "CB": "AA"}.get(zyr + zys, "AA")
+        reverse = rows[0].get("ZYB") == "2"
+        points = []
+        for row in rows:
+            dist = _to_float(row.get("ZYA"))
+            value = _to_float(row.get("ZYT"))
+            if dist is None or value is None:
+                continue
+            exp = _to_int(row.get("ZYU"))
+            if exp is not None:
+                value *= 10 ** exp
+            points.append({"dist": dist, "value": value})
+        if points:
+            result[sewer] = RawMeasurements(pipe_code=sewer, measurement_type=mtype,
+                                            reverse=reverse, points=points)
     return result
