@@ -27,3 +27,20 @@ def test_measured_length_mismatch_flagged():
     # measured length 50 m vs geometry 30 m -> >20% mismatch
     result = validate_network(manholes, [pipe], measured_length={"L1": 50.0})
     assert any("lengte" in i.lower() for i in result["pipes"]["L1"])
+
+
+def test_issues_carry_severity():
+    manholes = [rgs_ribx.Manhole(code="A", geometry_wkt="POINT (0 0)")]
+    pipes = [
+        rgs_ribx.Pipe(code="L1", manhole1="A", manhole2="Z", bob1=-2.0, bob2=None,
+                      diameter=5.0, length=30.0),
+    ]
+    result = rgs_ribx.validate_network(manholes, pipes)
+    issues = result["pipes"]["L1"]
+    sev = {str(i): i.severity for i in issues}
+    # missing bob2 + dangling manhole2 are errors; diameter out of range is a warning
+    assert sev["BOB ontbreekt (begin of eind)"] == "error"
+    assert any(s == "error" for k, s in sev.items() if "Knooppunt" in k)
+    assert any(s == "warning" for k, s in sev.items() if "Diameter buiten bereik" in k)
+    # still plain strings (backward compatible)
+    assert "; ".join(issues)  # joinable
