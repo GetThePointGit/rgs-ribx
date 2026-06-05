@@ -125,8 +125,18 @@ def _observation_groups(obs_df) -> dict:
     return groups
 
 
-def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, list]":
-    """Build (manholes, pipes, inspections) from parser output dicts."""
+def build_from_objects(objects: dict, observations: dict,
+                       progress=None) -> "tuple[list, list, list]":
+    """Build (manholes, pipes, inspections) from parser output dicts.
+
+    Parameters
+    ----------
+    objects, observations : dict
+        Parser output (DataFrame per object type).
+    progress : callable, optional
+        ``progress(fraction)`` (0..1) called periodically while building pipes, so
+        a caller can show import progress. Errors in the callback are ignored.
+    """
     manholes: list = []
     pipes: list = []
     inspections: list = []
@@ -135,13 +145,23 @@ def build_from_objects(objects: dict, observations: dict) -> "tuple[list, list, 
     measurements: dict = {}
     raw_measurements: dict = {}
 
+    def _report(frac):
+        if progress is not None:
+            try:
+                progress(frac)
+            except Exception:  # progress feedback must never break the build
+                pass
+
     # --- Pipes (ZB_A) ---
     # Group the (potentially millions of) A observations by object once, so each
     # pipe is a dict lookup instead of a full-frame scan + iterrows.
     obs_a_groups = _observation_groups(observations.get("A"))
     if "A" in objects:
         df = objects["A"]
-        for idx, row in df.iterrows():
+        n_total = len(df) or 1
+        for i, (idx, row) in enumerate(df.iterrows()):
+            if i % 25 == 0:
+                _report(i / n_total)
             code = _get(row, fm.REF_FIELDS["A"])
             if code is None:
                 continue
@@ -317,11 +337,15 @@ def _to_int(value) -> Optional[int]:
     return int(f) if f is not None else None
 
 
-def build_from_ribx(ribx_path: "Path | str") -> BuildResult:
-    """Parse a RIBX file and build the domain model."""
+def build_from_ribx(ribx_path: "Path | str", progress=None) -> BuildResult:
+    """Parse a RIBX file and build the domain model.
+
+    ``progress(fraction)`` (0..1), if given, is called periodically while building
+    the pipes (after the XML parse) so callers can show import progress.
+    """
     objects, observations, errors = ribx_to_pandas(ribx_path)
     manholes, pipes, inspections, measurements, raw_measurements = build_from_objects(
-        objects, observations)
+        objects, observations, progress=progress)
     return BuildResult(
         manholes=manholes,
         pipes=pipes,
@@ -332,10 +356,12 @@ def build_from_ribx(ribx_path: "Path | str") -> BuildResult:
     )
 
 
-def build_from_sufrib(paths) -> BuildResult:
+def build_from_sufrib(paths, progress=None) -> BuildResult:
     """Parse classic SUFRIB files (.rib + .hel/.rmb) and build the domain model.
 
     ``paths`` is one path or a list (network + measurement files, any order).
+    ``progress`` is accepted for API symmetry with :func:`build_from_ribx` (the
+    SUFRIB path is not sub-instrumented).
     """
     from rgs_ribx.parsing.sufrib import parse_coordinate, parse_sufrib
 
