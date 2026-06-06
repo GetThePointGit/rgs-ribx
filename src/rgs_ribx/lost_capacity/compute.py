@@ -94,7 +94,7 @@ def compute_water_level(graph: Graph, sink_node) -> None:
         under_water_list, shore_node_pairs = neighbouring_nodes_satisfying_condition(
             graph, current_node, done, under_water_condition
         )
-        done = done.union(under_water_list)
+        done.update(under_water_list)  # in-place; union() copied the whole set each pop
         for node in under_water_list:
             graph.nodes[node]["waterlevel"] = water_level
 
@@ -105,7 +105,7 @@ def compute_water_level(graph: Graph, sink_node) -> None:
             going_up_list, peak_node_pairs = neighbouring_nodes_satisfying_condition(
                 graph, shore_to, done, not_going_down_condition
             )
-            done = done.union(going_up_list)
+            done.update(going_up_list)  # in-place; union() copied the whole set each pop
             for node in going_up_list:
                 graph.nodes[node]["waterlevel"] = graph.nodes[node]["bob"]
             for peak_from, peak_to in peak_node_pairs:
@@ -118,8 +118,12 @@ def neighbouring_nodes_satisfying_condition(graph: Graph, start, visited, condit
 
     Border edges are (parent, child) pairs where the condition failed and
     ``child`` is not otherwise satisfied.
+
+    ``visited`` (the caller's ``done`` set) is read but never mutated, so it is not
+    copied — copying it on every call was O(nodes) per call. A node is skipped when
+    it is already done or already satisfied in this traversal (``local``).
     """
-    visited = set(visited)
+    local = set()  # nodes satisfied during this traversal (== set(satisfied))
     satisfied = []
     border = []
     stack = [(start, iter([start]))]
@@ -127,16 +131,15 @@ def neighbouring_nodes_satisfying_condition(graph: Graph, start, visited, condit
     while stack:
         parent, children = stack.pop()
         for child in children:
-            if child in visited:
+            if child in visited or child in local:
                 continue
             if condition(parent, child):
-                visited.add(child)
+                local.add(child)
                 satisfied.append(child)
                 stack.append((child, iter(sorted(graph[child]))))
             else:
                 border.append((parent, child))
-    satisfied_set = set(satisfied)
-    return satisfied, [(p, c) for p, c in border if c not in satisfied_set]
+    return satisfied, [(p, c) for p, c in border if c not in local]
 
 
 def add_lost_capacity(profiles: dict, pipes: dict, graph: Graph) -> None:
