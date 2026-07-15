@@ -29,6 +29,33 @@ def test_measured_length_mismatch_flagged():
     assert any("lengte" in i.lower() for i in result["pipes"]["L1"])
 
 
+def test_bob_at_or_above_ground_level_flagged():
+    # RIBX exports gebruiken 0.00 als placeholder voor "BOB niet gemeten"; een BOB
+    # op of boven het maaiveld van de aangrenzende put is fysiek onmogelijk.
+    manholes = [rgs_ribx.Manhole(code="A", ground_level=-3.29),
+                rgs_ribx.Manhole(code="B", ground_level=-3.21)]
+    pipes = [
+        rgs_ribx.Pipe(code="L1", manhole1="A", manhole2="B", bob1=0.0, bob2=0.0,
+                      diameter=0.25, length=23.0),
+        rgs_ribx.Pipe(code="L2", manhole1="A", manhole2="B", bob1=-5.93, bob2=-5.98,
+                      diameter=0.25, length=14.5),
+    ]
+    result = validate_network(manholes, pipes)
+    l1 = result["pipes"]["L1"]
+    assert any("maaiveld" in i.lower() for i in l1)
+    assert all(i.severity == "warning" for i in l1 if "maaiveld" in i.lower())
+    assert result["pipes"]["L2"] == []
+
+
+def test_bob_check_skipped_without_ground_level():
+    # Maaiveld onbekend (of put onbekend): geen maaiveld-waarschuwing mogelijk.
+    manholes = [rgs_ribx.Manhole(code="A"), rgs_ribx.Manhole(code="B")]
+    pipes = [rgs_ribx.Pipe(code="L1", manhole1="A", manhole2="B", bob1=0.0, bob2=0.0,
+                           diameter=0.25, length=23.0)]
+    result = validate_network(manholes, pipes)
+    assert not any("maaiveld" in i.lower() for i in result["pipes"]["L1"])
+
+
 def test_issues_carry_severity():
     manholes = [rgs_ribx.Manhole(code="A", geometry_wkt="POINT (0 0)")]
     pipes = [

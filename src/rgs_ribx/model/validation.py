@@ -43,6 +43,8 @@ def validate_network(manholes, pipes, measured_length=None):
     """
     measured_length = measured_length or {}
     manhole_codes = {m.code for m in manholes}
+    ground_levels = {m.code: m.ground_level for m in manholes
+                     if m.ground_level is not None}
 
     pipe_issues = {}
     for p in pipes:
@@ -51,6 +53,16 @@ def validate_network(manholes, pipes, measured_length=None):
             issues.append(Issue("Leidingcode ontbreekt", "error"))
         if p.bob1 is None or p.bob2 is None:
             issues.append(Issue("BOB ontbreekt (begin of eind)", "error"))
+        # Een BOB op of boven het maaiveld van de aangrenzende put is fysiek
+        # onmogelijk; RIBX-exports gebruiken o.a. 0.00 als placeholder voor
+        # "niet gemeten" en die valt hiermee door de mand.
+        for bob, ref, label in ((p.bob1, p.manhole1, "begin"),
+                                (p.bob2, p.manhole2, "eind")):
+            gl = ground_levels.get(ref)
+            if bob is not None and gl is not None and bob >= gl:
+                issues.append(Issue(
+                    f"BOB {label} op of boven maaiveld "
+                    f"({bob:.2f} m t.o.v. maaiveld {gl:.2f} m)", "warning"))
         if p.diameter is None:
             issues.append(Issue("Diameter ontbreekt", "error"))
         else:
